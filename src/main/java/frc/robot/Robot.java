@@ -6,6 +6,8 @@ package frc.robot;
 
 import com.ctre.phoenix6.HootAutoReplay;
 
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -21,6 +23,22 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
+        // Start WPILib DataLogManager (records SmartDashboard/NT entries & console output to .wpilog for AdvantageScope)
+        DataLogManager.start();
+        // Record DriverStation match data, mode transitions, and joystick inputs to the same .wpilog
+        DriverStation.startDataLog(DataLogManager.getLog());
+
+        // Log command lifecycle events so match logs show when commands start, finish, or get interrupted
+        CommandScheduler scheduler = CommandScheduler.getInstance();
+        scheduler.onCommandInitialize(
+            command -> DataLogManager.log("Command initialized: " + command.getName()));
+        scheduler.onCommandInterrupt(
+            (command, interruptor) -> DataLogManager.log(
+                "Command interrupted: " + command.getName()
+                    + " by " + interruptor.map(Command::getName).orElse("cancel/timeout")));
+        scheduler.onCommandFinish(
+            command -> DataLogManager.log("Command finished: " + command.getName()));
+
         m_robotContainer = new RobotContainer();
     }
 
